@@ -19,7 +19,8 @@ export const revalidate = 3600;
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const locale = asLocale((await params).locale);
   const t = await getTranslations({ locale, namespace: "meta" });
-  return buildMetadata({ locale, path: "/", title: t("homeTitle"), description: t("defaultDescription") });
+  // The home title already contains the brand, so it bypasses the "%s · CookPilot" template.
+  return { ...buildMetadata({ locale, path: "/", title: t("homeTitle"), description: t("defaultDescription") }), title: { absolute: t("homeTitle") } };
 }
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
