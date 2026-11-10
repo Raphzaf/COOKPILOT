@@ -41,7 +41,7 @@ Tip: use different Supabase projects and Stripe test keys for *Preview* so that 
 
 ## 4. Region
 
-**Settings → Functions → Function Region**: choose the region closest to your Supabase project (for an EU project, Paris `cdg1` or Frankfurt `fra1`) to keep database latency low.
+Functions run in Paris (`cdg1`), set in `vercel.json`. Change `regions` there to the region closest to your Supabase project (for example `fra1` for Frankfurt) to keep database latency low.
 
 ## 5. Domain
 
