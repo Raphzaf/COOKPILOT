@@ -2,7 +2,7 @@
   "name": "cookpilot",
   "version": "1.0.0",
   "private": true,
-  "description": "CookPilot — your kitchen, your appliances, your AI chef.",
+  "description": "CookPilot \u2014 your kitchen, your appliances, your AI chef.",
   "engines": {
     "node": ">=20.9"
   },
@@ -16,10 +16,10 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:seed:generate": "tsx scripts/generate-seed-sql.ts",
-    "db:types:check": "tsx scripts/check-migrations.ts",
     "admin:promote": "tsx scripts/promote-admin.ts",
     "knowledge:ingest": "tsx scripts/ingest-knowledge.ts",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run build"
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "icons:generate": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@sentry/nextjs": "^11.11.0",
