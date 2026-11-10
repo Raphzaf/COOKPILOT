@@ -36,6 +36,7 @@
     "demoAccount": "Demo account — nothing is saved permanently",
     "demoAsUser": "Demo: switch to regular user",
     "demoAsAdmin": "Demo: switch to admin",
+    "leaveDemo": "Leave the demo",
     "signOut": "Sign out",
     "planPro": "Pro",
     "planFree": "Free"

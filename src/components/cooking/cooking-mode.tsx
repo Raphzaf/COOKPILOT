@@ -2,7 +2,7 @@
 
 import { ArrowLeft, ArrowRight, Bell, BellRing, Check, ChefHat, ListChecks, Maximize, Minus, Pause, Play, Plus, RotateCcw, Sun, Thermometer, Timer as TimerIcon, Volume2, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { toast } from "sonner";
 import { finishCookingAction } from "@/actions/user";
 import { streamChef } from "@/components/chef/stream";
@@ -28,6 +28,9 @@ interface CookTimer {
   remaining: number;
   done: boolean;
 }
+
+const noopSubscribe = () => () => undefined;
+const readPermission = (): NotificationPermission | "unsupported" => (typeof Notification === "undefined" ? "unsupported" : Notification.permission);
 
 function beep() {
   try {
@@ -82,7 +85,9 @@ export function CookingMode({
   const [servings, setServings] = useState(initialServings);
   const [timers, setTimers] = useState<CookTimer[]>([]);
   const [now, setNow] = useState(() => Date.now());
-  const [notify, setNotify] = useState<NotificationPermission | "unsupported">("default");
+  const detectedPermission = useSyncExternalStore(noopSubscribe, readPermission, () => "default" as const);
+  const [grantedPermission, setNotify] = useState<NotificationPermission | null>(null);
+  const notify = grantedPermission ?? detectedPermission;
   const [showIngredients, setShowIngredients] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [awake, setAwake] = useState(false);
@@ -93,35 +98,38 @@ export function CookingMode({
   const wakeLock = useRef<{ release: () => Promise<void> } | null>(null);
   const step = index >= 0 && index < total ? recipe.steps[index]! : null;
 
+  const timersRef = useRef<CookTimer[]>([]);
   useEffect(() => {
-    setNotify(typeof Notification === "undefined" ? "unsupported" : Notification.permission);
-  }, []);
+    timersRef.current = timers;
+  }, [timers]);
 
-  // One ticking clock drives every timer.
+  // One ticking clock drives every timer and detects the ones that just finished.
   const running = timers.some((x) => x.endsAt !== null && !x.done);
   useEffect(() => {
     if (!running) return;
-    const id = window.setInterval(() => setNow(Date.now()), 250);
-    return () => window.clearInterval(id);
-  }, [running]);
-
-  useEffect(() => {
-    const finished = timers.filter((x) => !x.done && x.endsAt !== null && x.endsAt <= now);
-    if (finished.length === 0) return;
-    setTimers((prev) => prev.map((x) => (finished.some((f) => f.id === x.id) ? { ...x, done: true, endsAt: null, remaining: 0 } : x)));
-    beep();
-    navigator.vibrate?.([300, 150, 300]);
-    for (const timer of finished) {
-      toast.success(t("timerDone", { label: timer.label }), { duration: 15000 });
-      if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-        try {
-          new Notification(t("timerDoneTitle"), { body: timer.label, tag: `cookpilot-timer-${timer.id}`, icon: "/icons/icon-192.png" });
-        } catch {
-          // Some mobile browsers only allow notifications from a service worker.
+    const id = window.setInterval(() => {
+      const current = Date.now();
+      setNow(current);
+      const finished = timersRef.current.filter((x) => !x.done && x.endsAt !== null && x.endsAt <= current);
+      if (finished.length === 0) return;
+      const ids = new Set(finished.map((f) => f.id));
+      timersRef.current = timersRef.current.map((x) => (ids.has(x.id) ? { ...x, done: true, endsAt: null, remaining: 0 } : x));
+      setTimers((prev) => prev.map((x) => (ids.has(x.id) ? { ...x, done: true, endsAt: null, remaining: 0 } : x)));
+      beep();
+      navigator.vibrate?.([300, 150, 300]);
+      for (const timer of finished) {
+        toast.success(t("timerDone", { label: timer.label }), { duration: 15000 });
+        if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+          try {
+            new Notification(t("timerDoneTitle"), { body: timer.label, tag: `cookpilot-timer-${timer.id}`, icon: "/icons/icon-192.png" });
+          } catch {
+            // Some mobile browsers only allow notifications from a service worker.
+          }
         }
       }
-    }
-  }, [now, timers, t]);
+    }, 250);
+    return () => window.clearInterval(id);
+  }, [running, t]);
 
   // Keep the screen on (Pro) while cooking.
   useEffect(() => {

@@ -5,7 +5,7 @@ import { cache } from "react";
 import { getStore } from "@/lib/data";
 import { hydrateDemoUser, snapshotDemoUser, type DemoSnapshot } from "@/lib/data/demo-store";
 import type { Locale, SessionUser } from "@/lib/domain/types";
-import { isDemoMode } from "@/lib/env";
+import { isDemoAdminEnabled, isDemoMode } from "@/lib/env";
 import { redirect } from "@/lib/i18n/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -36,8 +36,10 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
     // First request before the proxy cookie exists: use a throw-away id.
     const userId = `demo-${sid && /^[0-9a-f-]{36}$/i.test(sid) ? sid : crypto.randomUUID()}`;
     hydrateDemoUser(userId, parseSnapshot(cookieStore.get(DEMO_STATE_COOKIE)?.value));
-    const profile = await store.getProfile(userId);
-    if (!profile) return null;
+    const stored = await store.getProfile(userId);
+    if (!stored) return null;
+    // The admin persona only exists where it has been explicitly enabled.
+    const profile = stored.role === "admin" && !isDemoAdminEnabled() ? { ...stored, role: "user" as const } : stored;
     return { id: userId, email: profile.email, profile, isDemo: true };
   }
 

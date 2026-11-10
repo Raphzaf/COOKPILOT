@@ -18,7 +18,7 @@ const num = (value: string | undefined): number | null => {
 export function parseCapabilities(text: string): Omit<DeviceCapability, "id">[] {
   return lines(text).map((line) => {
     const [kind, key, en, fr, min, max, unit, levels, noteEn, noteFr] = cells(line);
-    const k = kind === "accessory" || kind === "feature" ? kind : "program";
+    const k: DeviceCapability["kind"] = kind === "accessory" || kind === "feature" ? kind : "program";
     const name: I18nText = { en: en || key || "", fr: fr || en || key || "" };
     const tempMin = num(min);
     const tempMax = num(max);

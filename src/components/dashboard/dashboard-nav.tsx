@@ -72,7 +72,7 @@ export function MobileNav() {
   );
 }
 
-export function UserMenu({ name, email, isDemo, isAdmin }: { name: string; email: string; isDemo: boolean; isAdmin: boolean }) {
+export function UserMenu({ name, email, isDemo, isAdmin, canSwitchRole }: { name: string; email: string; isDemo: boolean; isAdmin: boolean; canSwitchRole: boolean }) {
   const t = useTranslations("nav");
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -103,7 +103,8 @@ export function UserMenu({ name, email, isDemo, isAdmin }: { name: string; email
         <DropdownMenuItem asChild><Link href="/dashboard/subscription"><CreditCard />{t("subscription")}</Link></DropdownMenuItem>
         {isAdmin ? <DropdownMenuItem asChild><Link href="/admin"><ShieldCheck />{t("admin")}</Link></DropdownMenuItem> : null}
         <DropdownMenuSeparator />
-        {isDemo ? (
+        {isDemo && !canSwitchRole ? <DropdownMenuItem asChild><Link href="/"><LogOut />{t("leaveDemo")}</Link></DropdownMenuItem> : null}
+        {isDemo && !canSwitchRole ? null : isDemo ? (
           <DropdownMenuItem onSelect={switchRole} disabled={pending} data-testid="demo-role-switch"><UserRoundCog />{isAdmin ? t("demoAsUser") : t("demoAsAdmin")}</DropdownMenuItem>
         ) : (
           <DropdownMenuItem onSelect={signOut} disabled={pending}><LogOut />{t("signOut")}</DropdownMenuItem>

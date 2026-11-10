@@ -31,6 +31,14 @@ export function isDemoMode(): boolean {
   return !isSupabaseConfigured();
 }
 
+/**
+ * The demo admin persona edits the shared in-memory demo catalogue, so on production
+ * deployments it is opt-in (DEMO_ADMIN_ENABLED=true). It never exists outside demo mode.
+ */
+export function isDemoAdminEnabled(): boolean {
+  return isDemoMode() && (process.env.NODE_ENV !== "production" || process.env.DEMO_ADMIN_ENABLED === "true");
+}
+
 export function getAppUrl(): string {
   if (publicEnv.appUrl) return publicEnv.appUrl;
   const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;

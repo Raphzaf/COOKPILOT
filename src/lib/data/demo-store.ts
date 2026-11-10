@@ -273,6 +273,9 @@ export const demoStore: DataStore = {
       published: input.published,
     };
     const list = db().devices;
+    if (list.some((d) => d.id !== model.id && d.brand.id === brand.id && d.modelNumber === model.modelNumber && d.region === model.region)) {
+      throw new Error("A model with this brand, number and region already exists");
+    }
     const index = list.findIndex((d) => d.id === model.id);
     if (index >= 0) list[index] = model;
     else list.push(model);

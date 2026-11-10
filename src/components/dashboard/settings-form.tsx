@@ -37,7 +37,8 @@ export function SettingsForm({ initial, email, isDemo }: { initial: PreferencesS
     start(async () => {
       const result = await deleteAccountAction(confirmation);
       if (!result.ok) return void toast.error(e(result.error));
-      window.location.assign(`/${state.locale}`);
+      router.replace("/", { locale: state.locale });
+      router.refresh();
     });
 
   return (

@@ -6,7 +6,7 @@ import type { PlanId, SessionUser } from "@/lib/domain/types";
 import { Link } from "@/lib/i18n/navigation";
 import { MobileNav, SidebarNav, UserMenu } from "./dashboard-nav";
 
-export function AppShell({ user, plan, planLabel, fallbackName, children }: { user: SessionUser; plan: PlanId; planLabel: string; fallbackName: string; children: React.ReactNode }) {
+export function AppShell({ user, plan, planLabel, fallbackName, canSwitchRole, children }: { user: SessionUser; plan: PlanId; planLabel: string; fallbackName: string; canSwitchRole: boolean; children: React.ReactNode }) {
   const isAdmin = user.profile.role === "admin";
   return (
     <div className="lg:grid lg:min-h-dvh lg:grid-cols-[15rem_1fr]">
@@ -23,7 +23,7 @@ export function AppShell({ user, plan, planLabel, fallbackName, children }: { us
           <div className="hidden lg:block" />
           <div className="flex items-center gap-3">
             <Badge variant={plan === "pro" ? "olive" : "outline"} data-testid="plan-badge">{planLabel}</Badge>
-            <UserMenu name={user.profile.displayName || fallbackName} email={user.email} isDemo={user.isDemo} isAdmin={isAdmin} />
+            <UserMenu name={user.profile.displayName || fallbackName} email={user.email} isDemo={user.isDemo} isAdmin={isAdmin} canSwitchRole={canSwitchRole} />
           </div>
         </header>
         <main id="main" className="mx-auto w-full max-w-6xl px-5 pb-28 pt-8 md:px-8 lg:pb-16">{children}</main>

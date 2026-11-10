@@ -5,7 +5,7 @@ import { Toaster as Sonner } from "sonner";
 export function Toaster() {
   return (
     <Sonner
-      position="bottom-center"
+      position="top-center"
       toastOptions={{
         classNames: {
           toast: "!rounded-xl !border !border-border !bg-surface !text-foreground !shadow-card !font-sans",

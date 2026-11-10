@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { setDemoPlan, setDemoRole } from "@/lib/data/demo-store";
-import { getAppUrl, isDemoMode } from "@/lib/env";
+import { getAppUrl, isDemoAdminEnabled, isDemoMode } from "@/lib/env";
 import { getStripe, priceIdFor } from "@/lib/billing/stripe";
 import { ActionError, userAction, type ActionResult } from "./helpers";
 
@@ -71,6 +71,7 @@ export async function setDemoPlanAction(plan: string): Promise<ActionResult> {
 export async function setDemoRoleAction(role: string): Promise<ActionResult> {
   return userAction(async ({ user }) => {
     if (!isDemoMode() || !user.isDemo) throw new ActionError("DEMO_ONLY");
+    if (!isDemoAdminEnabled()) throw new ActionError("FORBIDDEN");
     setDemoRole(user.id, z.enum(["user", "admin"]).parse(role));
     return null;
   });
